@@ -15,7 +15,6 @@ module StrongSchema
       return if @setup_done
 
       ActiveRecord::Schema.prepend(SchemaExtension)
-      ActiveRecord::Schema::Definition.prepend(SchemaExtension) if defined?(ActiveRecord::Schema::Definition)
 
       @setup_done = true
     end

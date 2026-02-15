@@ -19,11 +19,6 @@ RSpec.describe StrongSchema do
       expect(ActiveRecord::Schema.ancestors).to include(StrongSchema::SchemaExtension)
     end
 
-    it "prepends SchemaExtension to ActiveRecord::Schema::Definition" do
-      described_class.setup
-      expect(ActiveRecord::Schema::Definition.ancestors).to include(StrongSchema::SchemaExtension)
-    end
-
     it "is idempotent (does not duplicate ancestors)" do
       described_class.setup
       ancestors_count = ActiveRecord::Schema.ancestors.count { |a| a == StrongSchema::SchemaExtension }
@@ -32,18 +27,6 @@ RSpec.describe StrongSchema do
       new_ancestors_count = ActiveRecord::Schema.ancestors.count { |a| a == StrongSchema::SchemaExtension }
 
       expect(ancestors_count).to eq(new_ancestors_count)
-    end
-
-    it "skips Schema::Definition prepend when definition constant is missing" do
-      if defined?(ActiveRecord::Schema::Definition)
-        definition_const = ActiveRecord::Schema.send(:remove_const, :Definition)
-
-        begin
-          expect { described_class.setup }.not_to raise_error
-        ensure
-          ActiveRecord::Schema.const_set(:Definition, definition_const)
-        end
-      end
     end
   end
 
