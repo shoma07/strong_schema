@@ -72,6 +72,21 @@ RSpec.describe StrongSchema do
       ensure
         ActiveRecord.const_set(:Base, ar_base)
       end
+
+      it "does nothing when ActiveRecord::Base and ActiveSupport are not defined" do
+        ar_base = ActiveRecord::Base
+        as_module = ActiveSupport
+
+        ActiveRecord.send(:remove_const, :Base)
+        Object.send(:remove_const, :ActiveSupport)
+
+        expect(described_class).not_to receive(:setup)
+
+        described_class.install_boot_hook
+      ensure
+        ActiveRecord.const_set(:Base, ar_base)
+        Object.const_set(:ActiveSupport, as_module)
+      end
     end
 
     it "loads railtie integration when Rails::Railtie is defined" do

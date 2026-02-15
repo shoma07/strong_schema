@@ -17,7 +17,7 @@ Perfect for:
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'strong_schema'
+gem 'strong_schema', require: false
 ```
 
 And then execute:

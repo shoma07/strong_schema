@@ -26,7 +26,7 @@ module StrongSchema
         require_relative "strong_schema/railtie"
       elsif defined?(ActiveRecord::Base)
         setup
-      else
+      elsif defined?(ActiveSupport)
         ActiveSupport.on_load(:active_record) { StrongSchema.setup }
       end
     end
