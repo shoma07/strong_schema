@@ -20,11 +20,6 @@ module StrongSchema
       # ruby2_keywords is unavailable in some Ruby versions.
     end
 
-    #:  (Symbol, ?bool) -> bool
-    def respond_to_missing?(method, include_private = false)
-      super
-    end
-
     #:  () { () -> void } -> void
     def safety_assured(&block)
       StrongMigrations::Checker.safety_assured(&block)

@@ -43,17 +43,6 @@ RSpec.describe StrongSchema::SchemaExtension do
     end
   end
 
-  describe "#respond_to_missing?" do
-    before do
-      allow(schema).to receive(:connection).and_return(double(respond_to?: false))
-    end
-
-    it "delegates to super" do
-      result = schema.send(:respond_to_missing?, :some_undefined_method, false)
-      expect(result).to be false
-    end
-  end
-
   describe "#safety_assured" do
     it "delegates to StrongMigrations::Checker.safety_assured" do
       expect(StrongMigrations::Checker).to receive(:safety_assured).and_yield

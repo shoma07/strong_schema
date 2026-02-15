@@ -8,8 +8,6 @@ module StrongSchema
   module SchemaExtension
     def method_missing: (Symbol, *untyped) -> untyped
 
-    def respond_to_missing?: (Symbol, ?bool) -> bool
-
     def safety_assured: () { () -> void } -> void
   end
 end
