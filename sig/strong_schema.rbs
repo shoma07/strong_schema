@@ -1,4 +1,66 @@
 module StrongSchema
+  class Configuration
+    attr_accessor enabled: bool
+
+    attr_accessor raise_on_unsafe: bool
+
+    attr_accessor logger: Logger?
+
+    def initialize: () -> void
+  end
+end
+
+
+module StrongSchema
+  class Railtie < Rails::Railtie
+  end
+end
+
+
+module StrongSchema
+  module SchemaExtension
+    def method_missing: (Symbol, *untyped) -> untyped
+
+    def respond_to_missing?: (Symbol, ?bool) -> bool
+
+    def safety_assured: () { () -> void } -> void
+
+    private
+
+    def handle_unsafe_migration: (StrongMigrations::UnsafeMigration) -> void
+
+    def log_warning: (String) -> void
+  end
+end
+
+
+module StrongSchema
   VERSION: String
-  # See the writing guide of rbs: https://github.com/ruby/rbs#guides
+end
+
+
+module StrongSchema
+  class Error < StandardError
+  end
+
+  class UnsafeMigration < Error
+  end
+
+  @setup_done: bool?
+
+  @configuration: Configuration
+
+  attr_writer configuration: Configuration
+
+  def self.configuration: () -> Configuration
+
+  def self.configure: () { (Configuration) -> void } -> void
+
+  def self.reset_configuration!: () -> void
+
+  def self.setup: () -> void
+
+  def self.with_check: () { () -> void } -> void
+
+  def self.install_boot_hook: (bool) -> void
 end

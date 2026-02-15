@@ -1,5 +1,99 @@
+plugins:
+  - rubocop-performance
+  - rubocop-rbs_inline
+  - rubocop-rspec
+
 AllCops:
-  TargetRubyVersion: 3.2
+  TargetRubyVersion: 2.6
+  NewCops: enable
+  SuggestExtensions: false
+
+Layout/LeadingCommentSpace:
+  Enabled: true
+  AllowDoxygenCommentStyle: false
+  AllowGemfileRubyComment: false
+  AllowRBSInlineAnnotation: true
+
+Layout/LineLength:
+  Enabled: true
+  Max: 120
+  AllowHeredoc: true
+  AllowURI: true
+  AllowQualifiedName: true
+  AllowRBSInlineAnnotation: true
+  AllowCopDirectives: true
+  AllowedPatterns:
+    - "^ *#"
+
+Lint/SelfAssignment:
+  AllowRBSInlineAnnotation: true
+
+Metrics/BlockLength:
+  Enabled: true
+  CountComments: false
+  Max: 25
+  CountAsOne:
+    - array
+    - hash
+    - heredoc
+    - method_call
+  Exclude:
+    - "spec/**/*"
+    - "*.gemspec"
+
+Metrics/ClassLength:
+  Enabled: true
+  CountComments: false
+  Max: 100
+  CountAsOne:
+    - array
+    - hash
+    - heredoc
+    - method_call
+
+Metrics/MethodLength:
+  Enabled: true
+  CountComments: false
+  Max: 10
+  CountAsOne:
+    - array
+    - hash
+    - heredoc
+    - method_call
+
+Metrics/ModuleLength:
+  Enabled: true
+  CountComments: false
+  Max: 100
+  CountAsOne:
+    - array
+    - hash
+    - heredoc
+    - method_call
+
+RSpec/ExampleLength:
+  Enabled: true
+  Max: 10
+  CountAsOne:
+    - array
+    - hash
+    - heredoc
+    - method_call
+
+RSpec/MessageSpies:
+  Enabled: false
+
+RSpec/MultipleExpectations:
+  Enabled: false
+
+RSpec/NestedGroups:
+  Enabled: false
+
+RSpec/RemoveConst:
+  Enabled: false
+
+Style/Documentation:
+  Enabled: false
 
 Style/StringLiterals:
   EnforcedStyle: double_quotes
