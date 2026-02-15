@@ -42,27 +42,4 @@ RSpec.describe StrongSchema::SchemaExtension do
       end
     end
   end
-
-  describe "#safety_assured" do
-    it "delegates to StrongMigrations::Checker.safety_assured" do
-      expect(StrongMigrations::Checker).to receive(:safety_assured).and_yield
-
-      result = schema.safety_assured { :safe_result }
-      expect(result).to eq(:safe_result)
-    end
-
-    it "bypasses safety checks when wrapping unsafe operations" do
-      checker = instance_double(StrongMigrations::Checker)
-      allow(StrongMigrations::Checker).to receive(:new).and_return(checker)
-      allow(checker).to receive(:direction=)
-
-      allow(checker).to receive(:perform).and_yield
-
-      expect { schema.safety_assured { schema.remove_column(:accounts, :status) } }.to(
-        raise_error(StandardError) do |error|
-          expect(error).not_to be_a(StrongMigrations::UnsafeMigration)
-        end
-      )
-    end
-  end
 end

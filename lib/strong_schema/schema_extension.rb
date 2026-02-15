@@ -4,11 +4,8 @@ module StrongSchema
   module SchemaExtension
     #:  (Symbol, *untyped) -> untyped
     def method_missing(method, *args)
-      checker = StrongMigrations::Checker.new(self)
-      checker.direction = :up
-
       catch(:safe) do
-        checker.perform(method, *args) do
+        StrongMigrations::Checker.new(self).tap { |c| c.direction = :up }.perform(method, *args) do
           super
         end
       end
@@ -18,11 +15,6 @@ module StrongSchema
       ruby2_keywords(:method_missing)
     rescue NameError
       # ruby2_keywords is unavailable in some Ruby versions.
-    end
-
-    #:  () { () -> void } -> void
-    def safety_assured(&block)
-      StrongMigrations::Checker.safety_assured(&block)
     end
   end
 end

@@ -2,12 +2,6 @@
 
 🛡️ Brings [Strong Migrations](https://github.com/ankane/strong_migrations) safety checks to declarative schema definitions using `ActiveRecord::Schema`.
 
-Perfect for:
-- [Ridgepole](https://github.com/ridgepole/ridgepole) users
-- Direct `ActiveRecord::Schema` usage
-- Rails `schema.rb` files
-- Any tool using `ActiveRecord::Schema`
-
 ## Why Strong Schema?
 
 `ActiveRecord::Schema` is commonly used for declarative schema management, but lacks the safety checks that migrations have. Strong Schema bridges this gap by integrating Strong Migrations' battle-tested checks into schema definitions.
@@ -17,7 +11,7 @@ Perfect for:
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'strong_schema', require: false
+gem 'strong_schema'
 ```
 
 And then execute:
@@ -34,34 +28,6 @@ To enable Strong Schema with Ridgepole, use the `-r` option:
 
 ```bash
 $ ridgepole --apply -c config/database.yml -r strong_schema
-```
-
-This will automatically check your Schemafile for unsafe operations:
-
-```ruby
-# Schemafile
-create_table "users", force: :cascade do |t|
-  t.string "name"
-  t.string "email"
-  t.timestamps
-end
-
-# This will be flagged as unsafe!
-add_column :users, :settings, :json, default: {}
-```
-
-Output:
-
-```
-=== Dangerous operation detected #strong_migrations ===
-
-Adding a column with a non-null default blocks reads and writes...
-
-In your schema definition, you can wrap the operation with safety_assured:
-
-safety_assured do
-  add_column(:users, :settings, :json, {:default=>{}})
-end
 ```
 
 ### Configuring Strong Migrations
@@ -82,17 +48,6 @@ Then run:
 
 ```bash
 $ ridgepole --apply -c config/database.yml -r ./config/ridgepole_setup.rb
-```
-
-### Bypassing Safety Checks
-
-When you're certain an operation is safe, wrap it with `safety_assured`:
-
-```ruby
-# Schemafile
-safety_assured do
-  remove_column :users, :old_column
-end
 ```
 
 ## Development
