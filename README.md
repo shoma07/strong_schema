@@ -1,10 +1,12 @@
 # Strong Schema
 
-🛡️ Brings [Strong Migrations](https://github.com/ankane/strong_migrations) safety checks to declarative schema definitions using `ActiveRecord::Schema`.
+🛡️ Brings [Strong Migrations](https://github.com/ankane/strong_migrations) safety checks to schema-based database management.
 
-## Why Strong Schema?
+## Overview
 
-`ActiveRecord::Schema` is commonly used for declarative schema management, but lacks the safety checks that migrations have. Strong Schema bridges this gap by integrating Strong Migrations' battle-tested checks into schema definitions.
+Tools using `ActiveRecord::Schema` for declarative database management lack safety checks for dangerous operations. This can lead to production issues—such as removing columns without proper safeguards or adding indexes that lock tables.
+
+Strong Schema brings the same proven safety checks from Strong Migrations to schema-based workflows, catching unsafe operations before they reach your database.
 
 ## Installation
 
@@ -22,20 +24,12 @@ bundle install
 
 ## Usage
 
-### With Ridgepole
+### Configuration
 
-To enable Strong Schema with Ridgepole, use the `-r` option:
-
-```bash
-$ ridgepole --apply -c config/database.yml -r strong_schema
-```
-
-### Configuring Strong Migrations
-
-To configure Strong Migrations for Ridgepole, create a setup file and require it:
+To customize settings, create a configuration file:
 
 ```ruby
-# config/ridgepole_setup.rb
+# config/strong_schema.rb
 require "strong_schema"
 
 StrongMigrations.start_after = 20260214142757
@@ -44,10 +38,12 @@ StrongMigrations.statement_timeout = 1.hour
 StrongMigrations.auto_analyze = true
 ```
 
-Then run:
+### Integration with Ridgepole
+
+When using Ridgepole, load the configuration file using the `-r` option:
 
 ```bash
-$ ridgepole --apply -c config/database.yml -r ./config/ridgepole_setup.rb
+$ ridgepole --apply -c config/database.yml -r ./config/strong_schema.rb
 ```
 
 ### Ignoring Specific Operations
@@ -55,7 +51,7 @@ $ ridgepole --apply -c config/database.yml -r ./config/ridgepole_setup.rb
 When you need to bypass safety checks for operations you've verified as safe, use `StrongSchema.add_ignore`:
 
 ```ruby
-# config/ridgepole_setup.rb
+# config/strong_schema.rb
 require "strong_schema"
 
 # Ignore a specific column removal
@@ -75,7 +71,13 @@ The block receives:
 - `method`: Operation symbol (`:add_column`, `:remove_column`, `:change_column`, etc.)
 - `args`: Arguments array. First element is typically the table name.
 
-**Note:** Ridgepole's `--bulk-change` flag wraps operations in `change_table` blocks, but individual operations inside are still detected with their original method names (`:remove_column`, `:add_column`, etc.). The same ignore rules work for both bulk and non-bulk modes.
+**Note:** Operations inside `change_table` blocks are detected with their original method names (`:remove_column`, `:add_column`, etc.), not as `:change_table`. The same ignore rules work for both direct operations and operations within `change_table` blocks.
+
+## Acknowledgments
+
+This gem stands on the shoulders of giants. Special thanks to the following project:
+
+- [Strong Migrations](https://github.com/ankane/strong_migrations) - Safety checks for migrations
 
 ## Development
 
@@ -85,14 +87,6 @@ After checking out the repo, run `bin/setup` to install dependencies. Then, run 
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/shoma07/strong_schema.
 
-## Acknowledgments
-
-This gem stands on the shoulders of giants. Special thanks to the following project:
-
-- [Strong Migrations](https://github.com/ankane/strong_migrations) by Andrew Kane - Safety checks for migrations
-
 ## License
 
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
-
-This gem integrates but does not modify the original libraries, which retain their respective licenses and copyrights.
