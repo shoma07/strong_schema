@@ -4,6 +4,8 @@ module StrongSchema
   module SchemaExtension
     #:  (Symbol, *untyped) -> untyped
     def method_missing(method, *args)
+      return super if method == :change_table || StrongSchema.should_ignore?(method, args)
+
       catch(:safe) do
         StrongMigrations::Checker.new(self).tap { |c| c.direction = :up }.perform(method, *args) do
           super

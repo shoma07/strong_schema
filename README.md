@@ -50,6 +50,33 @@ Then run:
 $ ridgepole --apply -c config/database.yml -r ./config/ridgepole_setup.rb
 ```
 
+### Ignoring Specific Operations
+
+When you need to bypass safety checks for operations you've verified as safe, use `StrongSchema.add_ignore`:
+
+```ruby
+# config/ridgepole_setup.rb
+require "strong_schema"
+
+# Ignore a specific column removal
+StrongSchema.add_ignore do |method, args|
+  method == :remove_column && 
+    args[0].to_s == "users" && 
+    args[1].to_s == "old_email"
+end
+
+# Ignore by table name (all operations on the table)
+StrongSchema.add_ignore do |method, args|
+  args[0].to_s == "legacy_table"
+end
+```
+
+The block receives:
+- `method`: Operation symbol (`:add_column`, `:remove_column`, `:change_column`, etc.)
+- `args`: Arguments array. First element is typically the table name.
+
+**Note:** Ridgepole's `--bulk-change` flag wraps operations in `change_table` blocks, but individual operations inside are still detected with their original method names (`:remove_column`, `:add_column`, etc.). The same ignore rules work for both bulk and non-bulk modes.
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt.

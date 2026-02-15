@@ -1,11 +1,16 @@
 # frozen_string_literal: true
 
+require "singleton"
 require "strong_migrations"
 
 require_relative "strong_schema/version"
+require_relative "strong_schema/ignore_checks"
 require_relative "strong_schema/schema_extension"
+require_relative "strong_schema/table_extension"
 
 module StrongSchema
+  extend IgnoreChecks
+
   class << self
     # @rbs!
     #   @setup_done: bool?
@@ -15,6 +20,7 @@ module StrongSchema
       return if @setup_done
 
       ActiveRecord::Schema.prepend(SchemaExtension)
+      ActiveRecord::ConnectionAdapters::Table.prepend(TableExtension)
 
       @setup_done = true
     end

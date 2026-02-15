@@ -1,4 +1,17 @@
 module StrongSchema
+  module IgnoreChecks
+    def add_ignore: () { (Symbol, Array[untyped]) -> bool } -> void
+
+    def ignore_checks: () -> Array[Proc]
+
+    def reset_ignores!: () -> void
+
+    def should_ignore?: (Symbol, Array[untyped]) -> bool
+  end
+end
+
+
+module StrongSchema
   class Railtie < Rails::Railtie
   end
 end
@@ -12,11 +25,32 @@ end
 
 
 module StrongSchema
+  module TableExtension
+    OPERATION_MAP: Hash[Symbol, Symbol]
+
+    class MigrationProxy
+      include Singleton
+
+      def reverting?: () -> false
+
+      def version: () -> nil
+
+      def connection: () -> ActiveRecord::ConnectionAdapters::AbstractAdapter
+
+      def stop!: (String, ?header: String) -> void
+    end
+  end
+end
+
+
+module StrongSchema
   VERSION: String
 end
 
 
 module StrongSchema
+  extend IgnoreChecks
+
   @setup_done: bool?
 
   def self.setup: () -> void
