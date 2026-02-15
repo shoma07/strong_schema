@@ -9,6 +9,7 @@ SimpleCov.start do
   minimum_coverage line: 100, branch: 100
 end
 
+require "active_support"
 require "active_record"
 require "strong_schema"
 

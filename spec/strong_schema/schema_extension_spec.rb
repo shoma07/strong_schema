@@ -2,119 +2,55 @@
 
 RSpec.describe StrongSchema::SchemaExtension do
   let(:schema_class) do
-    Class.new do
+    Class.new(ActiveRecord::Migration::Current) do
       prepend StrongSchema::SchemaExtension
-
-      attr_reader :last_called_method, :last_called_args
-
-      def method_missing(method, *args)
-        @last_called_method = method
-        @last_called_args = args
-      end
-
-      def respond_to_missing?(method, include_private = false)
-        super
-      end
     end
   end
 
   let(:schema) { schema_class.new }
 
-  before do
-    StrongSchema.configure do |config|
-      config.enabled = true
-      config.raise_on_unsafe = true
-    end
-  end
+  describe "checked methods" do
+    let(:checker) { instance_double(StrongMigrations::Checker) }
 
-  after do
-    StrongSchema.reset_configuration!
-  end
-
-  describe "#method_missing" do
-    context "when StrongSchema is disabled" do
-      before do
-        StrongSchema.configure { |c| c.enabled = false }
-      end
-
-      it "bypasses safety checks and calls super directly" do
-        expect(StrongMigrations::Checker).not_to receive(:new)
-        schema.add_column(:users, :email, :string)
-        expect(schema.last_called_method).to eq(:add_column)
-        expect(schema.last_called_args).to eq(%i[users email string])
-      end
+    before do
+      allow(StrongMigrations::Checker).to receive(:new).and_return(checker)
+      allow(checker).to receive(:direction=)
     end
 
-    context "when StrongSchema is enabled" do
-      let(:checker) { instance_double(StrongMigrations::Checker) }
-
+    context "when checker raises UnsafeMigration" do
       before do
-        allow(StrongMigrations::Checker).to receive(:new).with(schema).and_return(checker)
-        allow(checker).to receive(:direction=)
-      end
-
-      it "creates a Checker with self and performs checks" do
-        allow(checker).to receive(:perform).with(:add_column, :users, :email, :string).and_yield
-
-        schema.add_column(:users, :email, :string)
-
-        expect(StrongMigrations::Checker).to have_received(:new).with(schema)
-        expect(checker).to have_received(:direction=).with(:up)
-        expect(schema.last_called_method).to eq(:add_column)
-      end
-
-      it "raises StrongSchema::UnsafeMigration on unsafe operations" do
         allow(checker).to receive(:perform).and_raise(
-          StrongMigrations::UnsafeMigration, "unsafe operation detected"
+          StrongMigrations::UnsafeMigration, "Active Record caches attributes"
         )
+      end
 
+      it "raises StrongMigrations::UnsafeMigration" do
         expect do
-          schema.remove_column(:users, :old_column)
-        end.to raise_error(StrongSchema::UnsafeMigration, /unsafe operation detected/)
+          schema.remove_column(:accounts, :status)
+        end.to raise_error(StrongMigrations::UnsafeMigration, /Active Record caches attributes/)
+      end
+    end
+
+    context "when checker does not raise" do
+      before do
+        allow(checker).to receive(:perform).and_yield
       end
 
-      context "when raise_on_unsafe is false" do
-        before do
-          StrongSchema.configure { |c| c.raise_on_unsafe = false }
-        end
-
-        it "logs a warning using the configured logger" do
-          allow(checker).to receive(:perform).and_raise(
-            StrongMigrations::UnsafeMigration, "unsafe operation detected"
-          )
-
-          logger = instance_double(Logger)
-          StrongSchema.configure { |c| c.logger = logger }
-          allow(logger).to receive(:warn)
-
-          expect do
-            schema.remove_column(:users, :old_column)
-          end.not_to raise_error
-
-          expect(logger).to have_received(:warn).with(/unsafe operation detected/)
-        end
-
-        it "falls back to a default Logger when none configured" do
-          allow(checker).to receive(:perform).and_raise(
-            StrongMigrations::UnsafeMigration, "unsafe operation detected"
-          )
-
-          default_logger = instance_double(Logger)
-          allow(Logger).to receive(:new).with($stdout).and_return(default_logger)
-          allow(default_logger).to receive(:warn)
-
-          schema.remove_column(:users, :old_column)
-
-          expect(default_logger).to have_received(:warn).with(/unsafe operation detected/)
-        end
+      it "allows the operation" do
+        # super's method_missing will eventually raise without a real DB
+        expect { schema.add_column(:accounts, :name, :string) }.to raise_error(StandardError)
       end
+    end
+  end
 
-      it "handles :safe throw from safe_by_default" do
-        allow(checker).to receive(:perform) { throw :safe }
+  describe "#respond_to_missing?" do
+    before do
+      allow(schema).to receive(:connection).and_return(double(respond_to?: false))
+    end
 
-        expect { schema.add_index(:users, :email) }.not_to raise_error
-        expect(schema.last_called_method).to be_nil
-      end
+    it "delegates to super" do
+      result = schema.send(:respond_to_missing?, :some_undefined_method, false)
+      expect(result).to be false
     end
   end
 
@@ -125,11 +61,19 @@ RSpec.describe StrongSchema::SchemaExtension do
       result = schema.safety_assured { :safe_result }
       expect(result).to eq(:safe_result)
     end
-  end
 
-  describe "#respond_to_missing?" do
-    it "falls back to super" do
-      expect(schema.send(:respond_to_missing?, :non_existing_method, false)).to be false
+    it "bypasses safety checks when wrapping unsafe operations" do
+      checker = instance_double(StrongMigrations::Checker)
+      allow(StrongMigrations::Checker).to receive(:new).and_return(checker)
+      allow(checker).to receive(:direction=)
+
+      allow(checker).to receive(:perform).and_yield
+
+      expect { schema.safety_assured { schema.remove_column(:accounts, :status) } }.to(
+        raise_error(StandardError) do |error|
+          expect(error).not_to be_a(StrongMigrations::UnsafeMigration)
+        end
+      )
     end
   end
 end

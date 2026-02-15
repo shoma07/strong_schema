@@ -10,4 +10,3 @@
 - `safety_assured` helper for bypassing checks
 - Automatic setup for Rails and non-Rails environments
 - Support for all Strong Migrations checks (PostgreSQL, MySQL, MariaDB)
-- Works with Ridgepole, Rails schema.rb, and direct ActiveRecord::Schema usage

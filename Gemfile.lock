@@ -173,6 +173,7 @@ PLATFORMS
 
 DEPENDENCIES
   activerecord
+  activesupport
   irb
   rake
   rbs-inline

@@ -4,7 +4,8 @@ source "https://rubygems.org"
 
 gemspec
 
-gem "activerecord"
+gem "activerecord", require: false
+gem "activesupport", require: false
 gem "irb", require: false
 gem "rake", require: false
 gem "rbs-inline", require: false
